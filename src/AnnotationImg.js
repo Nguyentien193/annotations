@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
-const Annotation = () => {
+const AnnotationImg = () => {
   const [annotations, setAnnotations] = useState([]);
-
   const [form, setForm] = useState({ title: "", text: "", x: 0, y: 0 });
+  const [startPosition, setStartPosition] = useState({ x: null, y: null });
+  const [endPosition, setEndPosition] = useState({ x: null, y: null });
+  const [draws, setDraws] = useState([]);
+  const [drawing, setDrawing] = useState(false);
+  const [isDd, setIsDd] = useState(false);
   useEffect(() => {
     console.log("form: ", form);
   }, [form]);
@@ -63,10 +67,50 @@ const Annotation = () => {
     }
   };
 
+  useEffect(() => {
+    console.log("draws: ", draws);
+  }, [draws]);
+
+  const handleMouseDown = (e) => {
+    setStartPosition({ x: e.clientX, y: e.clientY });
+    setDrawing(true);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!drawing) return;
+    setEndPosition({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleMouseUp = () => {
+    const x = {
+      startPos: {
+        x: startPosition.x,
+        y: startPosition.y,
+      },
+      endPos: {
+        x: endPosition.x,
+        y: endPosition.y,
+      },
+    };
+    setDraws((prev) => [...prev, x]);
+    setDrawing(false);
+    setEndPosition({});
+    setStartPosition({});
+  };
+
   return (
     <div id="app">
-      <div id="annotated-image-wrapper" className="annotated-image-wrapper">
+      <div
+        // onMouseDown={handleMouseDown}
+        // onMouseMove={handleMouseMove}
+        // onMouseUp={handleMouseUp}
+        id="annotated-image-wrapper"
+        className="annotated-image-wrapper"
+      >
         <img
+          style={{
+            zIndex: 10,
+          }}
           id="annotated-image"
           src="https://images.unsplash.com/photo-1528254609158-ae7dfaa48ab3?fit=crop&w=1350&q=80"
           alt=""
@@ -80,9 +124,36 @@ const Annotation = () => {
             style={{ top: `${annotation.y}%`, left: `${annotation.x}%` }}
           ></div>
         ))}
+
+        {drawing && (
+          <div
+            style={{
+              position: "absolute",
+              left: startPosition.x,
+              top: startPosition.y,
+              width: endPosition.x - startPosition.x,
+              height: endPosition.y - startPosition.y,
+              border: "2px solid #000",
+            }}
+          />
+        )}
+        {draws.length > 0 &&
+          draws.map((item, idx) => (
+            <div
+              key={item.startPos.x}
+              style={{
+                position: "absolute",
+                left: item.startPos.x,
+                top: item.startPos.y,
+                width: item.endPos.x - item.startPos.x,
+                height: item.endPos.y - item.startPos.y,
+                border: "2px solid #000",
+              }}
+            />
+          ))}
       </div>
     </div>
   );
 };
 
-export default Annotation;
+export default AnnotationImg;
